@@ -38,3 +38,5 @@ electron主线程启动，窗口准备好了，会加载renderer下dist的index.
 - 入门electron，并整合了原生的ts
 
 #### 图片
+
+![image](https://github.com/Yu15693/Snakes/blob/master/img/image.png?raw=true)
