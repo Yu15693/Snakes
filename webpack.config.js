@@ -2,47 +2,22 @@ const path = require('path')
 const HTMLWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
-module.exports = {
-    mode: 'production',
-    // 入口文件
-    entry: './src/index.ts',
-    // 指定打包文件所在目录
-    output: {
-        // 指定打包目录和打包后文件
-        path: path.resolve(__dirname, 'dist'),
-        filename: 'bundle.js',
+//对于两个目录同样的配置
+let common_config = {
+    node: {
+        __dirname: true
     },
-    //指定webpack打包时要使用的的模块
+    mode: process.env.ENV || 'development',
     module: {
         rules: [
+            // 设置ts文件处理
             {
-                // 指定规则生效的文件
-                test: /\.ts$/,
-                use: [
-                    {
-                        // 配置babel
-                        loader: 'babel-loader',
-                        options: {
-                            // 预定义的环境
-                            presets: [
-                                [
-                                    '@babel/preset-env',
-                                    {
-                                        targets: {
-                                            chrome: '88',
-                                        },
-                                        corejs: '3',
-                                        // 按需加载
-                                        useBuiltIns: 'usage',
-                                    },
-                                ],
-                            ],
-                        },
-                    },
-                    'ts-loader',
-                ],
-                //排除的文件
-                exclude: '/node_modules/',
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: [
+                    /node_modules/,
+                    path.resolve(__dirname, "src/ui")
+                ]
             },
             // 设置less文件处理
             {
@@ -50,35 +25,47 @@ module.exports = {
                 use: [
                     "style-loader",
                     "css-loader",
-                    {
-                        loader: "postcss-loader",
-                        options: {
-                            postcssOptions: {
-                                plugins: [
-
-                                    ["postcss-preset-env",
-                                        {
-                                            browers: 'last 2 versions'
-                                        }]
-                                ]
-                            }
-                        }
-                    },
                     "less-loader"
                 ]
             }
-        ],
+        ]
     },
     // 引入的插件
     plugins: [
+        //每次打包前清理
         new CleanWebpackPlugin(),
+        //生成对应index文件
         new HTMLWebpackPlugin({
-            // title: '自定义的title',
-            template: './src/index.html',
+            title: '贪吃蛇',
+            template: './src/renderer/index.html',
         }),
     ],
-    //设置引用模块
     resolve: {
-        extensions: ['.ts', '.js'],
+        extensions: ['.tsx', '.ts', '.js']
     },
-}
+};
+
+module.exports = [
+    //electron主进程设置
+    Object.assign({}, common_config, {
+        target: 'electron-main',
+        entry: {
+            renderrer: './src/main/index.ts',
+        },
+        output: {
+            filename: '[name]-bundle.js',
+            path: path.resolve(__dirname, 'src/main/dist')
+        },
+    }),
+    //electron渲染进程配置
+    Object.assign({}, common_config, {
+        target: 'electron-renderer',
+        entry: {
+            ui: './src/renderer/index.ts',
+        },
+        output: {
+            filename: '[name]-bundle.js',
+            path: path.resolve(__dirname, 'src/renderer/dist')
+        },
+    })
+]

@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "module": "ES6",
+    "module": "CommonJS",
     "target": "ES6",
     "strict": true,
     "noEmitOnError": true
   },
-  "include": ["./src/**/*"]
+  "exclude": ["node_modules", "src/renderer"]
 }
